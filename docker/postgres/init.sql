@@ -1,0 +1,2 @@
+-- Initialization script
+-- PostgreSQL will run this on first startup

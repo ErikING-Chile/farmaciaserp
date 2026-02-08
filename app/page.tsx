@@ -1,65 +1,146 @@
-import Image from "next/image";
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Package, Shield, Wifi, Zap } from "lucide-react"
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Navigation */}
+      <nav className="border-b bg-white/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Package className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-900">Farmacia ERP</span>
+            </div>
+            <div className="flex gap-4">
+              <Link href="/login">
+                <Button variant="ghost">Iniciar Sesión</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center">
+          <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6">
+            Gestión inteligente para
+            <span className="text-blue-600"> tu farmacia</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            Sistema completo de gestión con inventario FEFO, punto de venta, 
+            control de lotes y soporte offline. Diseñado específicamente para 
+            farmacias en Chile.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Link href="/login">
+              <Button size="lg" className="text-lg px-8">
+                Comenzar Ahora
+              </Button>
+            </Link>
+          </div>
+          <p className="mt-4 text-sm text-gray-500">
+            Demo: admin@demo.cl / password
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* Features */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="bg-white p-6 rounded-xl shadow-sm border">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <Package className="w-6 h-6 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Inventario FEFO
+            </h3>
+            <p className="text-gray-600">
+              Control automático de lotes con fecha de vencimiento. 
+              Asignación FEFO en cada venta.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-xl shadow-sm border">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <Zap className="w-6 h-6 text-green-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Punto de Venta Rápido
+            </h3>
+            <p className="text-gray-600">
+              POS optimizado para ventas rápidas con escáner de códigos 
+              de barras y búsqueda inteligente.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-xl shadow-sm border">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+              <Wifi className="w-6 h-6 text-purple-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Funciona Offline
+            </h3>
+            <p className="text-gray-600">
+              Sigue vendiendo sin internet. Sincronización automática 
+              cuando vuelva la conexión.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-xl shadow-sm border">
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6 text-orange-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              DTE Ready
+            </h3>
+            <p className="text-gray-600">
+              Preparado para facturación electrónica. Integración 
+              con SII en fases.
+            </p>
+          </div>
         </div>
-      </main>
+      </div>
+
+      {/* CTA Section */}
+      <div className="bg-blue-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">
+            ¿Listo para modernizar tu farmacia?
+          </h2>
+          <p className="text-blue-100 mb-8 text-lg">
+            Prueba el demo gratis y descubre todas las funcionalidades.
+          </p>
+          <Link href="/login">
+            <Button size="lg" variant="secondary" className="text-lg px-8">
+              Acceder al Demo
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-50 border-t py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                <Package className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-900">
+                Farmacia ERP
+              </span>
+            </div>
+            <p className="text-sm text-gray-500">
+              © 2026 Farmacia ERP. Todos los derechos reservados.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
+  )
 }

@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+RUN npm install
+
+# Copy prisma schema
+COPY prisma ./prisma
+
+# Copy the rest of the app
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Command to run migrations
+CMD ["npx", "prisma", "migrate", "dev", "--name", "init"]
