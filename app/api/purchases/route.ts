@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { Prisma, PurchaseStatus } from "@prisma/client"
 
 const querySchema = z.object({
   search: z.string().optional(),
   status: z.string().optional(),
-  page: z.string().transform(Number).default("1"),
-  limit: z.string().transform(Number).default("20"),
+  page: z.coerce.number().default(1),
+  limit: z.coerce.number().default(20),
 })
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const params = querySchema.parse(Object.fromEntries(searchParams))
 
-    const where: any = {
+    const where: Prisma.PurchaseInvoiceWhereInput = {
       tenantId: session.user.tenantId,
     }
 
@@ -33,7 +33,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (params.status && params.status !== "all") {
-      where.status = params.status.toUpperCase()
+      const normalizedStatus = params.status.toUpperCase()
+      if (normalizedStatus in PurchaseStatus) {
+        where.status = normalizedStatus as PurchaseStatus
+      }
     }
 
     const skip = (params.page - 1) * params.limit
@@ -102,7 +105,7 @@ const createPurchaseSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -179,7 +182,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid input", details: error.errors },
+        { error: "Invalid input", details: error.issues },
         { status: 400 }
       )
     }

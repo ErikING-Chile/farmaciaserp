@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Check } from "lucide-react"
@@ -39,7 +38,6 @@ interface CartItem {
 }
 
 export default function POSPage() {
-  const router = useRouter()
   const [search, setSearch] = useState("")
   const [products, setProducts] = useState<Product[]>([])
   const [cart, setCart] = useState<CartItem[]>([])

@@ -1,4 +1,5 @@
-import { NextAuthOptions } from "next-auth"
+import type { NextAuthConfig, Session, User } from "next-auth"
+import type { JWT } from "next-auth/jwt"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
@@ -11,8 +12,8 @@ const credentialsSchema = z.object({
   tenantSlug: z.string().optional(),
 })
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+export const authOptions: NextAuthConfig = {
+  adapter: PrismaAdapter(prisma) as NextAuthConfig["adapter"],
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -82,7 +83,17 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({
+      token,
+      user,
+      trigger,
+      session,
+    }: {
+      token: JWT
+      user?: User | null
+      trigger?: "signIn" | "signUp" | "update"
+      session?: Session
+    }) {
       if (user) {
         token.id = user.id
         token.role = user.role
@@ -91,13 +102,13 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Handle session updates
-      if (trigger === "update" && session) {
-        token.branchId = session.branchId
+      if (trigger === "update" && session?.user) {
+        token.branchId = session.user.branchId
       }
 
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token) {
         session.user.id = token.id as string
         session.user.role = token.role as string
@@ -108,14 +119,14 @@ export const authOptions: NextAuthOptions = {
     },
   },
   events: {
-    async signIn({ user }) {
+    async signIn({ user }: { user: User }) {
       // Audit log
       await prisma.auditLog.create({
         data: {
           action: "LOGIN",
           entityType: "User",
           entityId: user.id,
-          tenantId: (user as any).tenantId,
+          tenantId: user.tenantId,
           userId: user.id,
         },
       })

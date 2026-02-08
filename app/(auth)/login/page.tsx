@@ -42,6 +42,7 @@ export default function LoginPage() {
       router.push(callbackUrl)
       router.refresh()
     } catch (error) {
+      console.error("Login error:", error)
       setError("Error al iniciar sesión")
       setIsLoading(false)
     }

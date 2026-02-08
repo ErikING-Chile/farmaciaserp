@@ -2,10 +2,13 @@ import { requireAuth } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { formatDateShort, formatCurrency } from "@/lib/utils"
-import { AlertTriangle, Package, Plus } from "lucide-react"
+import { formatDateShort } from "@/lib/utils"
+import { AlertTriangle, Package } from "lucide-react"
 
-async function getInventory(tenantId: string, branchId: string | null) {
+async function getInventory(tenantId: string) {
+  const expiringThreshold = new Date()
+  expiringThreshold.setDate(expiringThreshold.getDate() + 30)
+
   // Get all active products with their stock levels
   const products = await prisma.product.findMany({
     where: {
@@ -30,14 +33,19 @@ async function getInventory(tenantId: string, branchId: string | null) {
     const totalStock = product.batches.reduce((sum, batch) => sum + batch.remainingQty, 0)
     const hasLowStock = totalStock < product.minStock
     const expiringBatches = product.batches.filter(
-      (batch) => new Date(batch.expirationDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      (batch) => new Date(batch.expirationDate) < expiringThreshold
     )
+    const nextBatch = product.batches[0]
+    const nextBatchExpiringSoon = nextBatch
+      ? new Date(nextBatch.expirationDate) < expiringThreshold
+      : false
 
     return {
       ...product,
       totalStock,
       hasLowStock,
       expiringBatches,
+      nextBatchExpiringSoon,
     }
   })
 
@@ -46,7 +54,7 @@ async function getInventory(tenantId: string, branchId: string | null) {
 
 export default async function InventoryPage() {
   const user = await requireAuth()
-  const inventory = await getInventory(user.tenantId, user.branchId)
+  const inventory = await getInventory(user.tenantId)
 
   const lowStockCount = inventory.filter((item) => item.hasLowStock).length
   const expiringCount = inventory.filter((item) => item.expiringBatches.length > 0).length
@@ -160,7 +168,7 @@ export default async function InventoryPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {item.batches.length > 0 ? (
                         <span className={`text-sm ${
-                          new Date(item.batches[0].expirationDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                          item.nextBatchExpiringSoon
                             ? "text-yellow-600 font-medium"
                             : "text-gray-500"
                         }`}>

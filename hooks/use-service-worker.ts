@@ -39,7 +39,13 @@ export function useServiceWorker() {
 export function requestBackgroundSync() {
   if ('serviceWorker' in navigator && 'SyncManager' in window) {
     navigator.serviceWorker.ready.then((registration) => {
-      return (registration as any).sync.register('sync-sales')
+      if ('sync' in registration) {
+        const syncRegistration = registration as ServiceWorkerRegistration & {
+          sync: { register: (tag: string) => Promise<void> }
+        }
+        return syncRegistration.sync.register('sync-sales')
+      }
+      return undefined
     })
   }
 }

@@ -156,7 +156,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       {product.category?.name || "Sin categoría"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${product.salePrice.toLocaleString("es-CL")}
+                      ${product.salePrice.toNumber().toLocaleString("es-CL")}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">

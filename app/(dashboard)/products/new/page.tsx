@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
+import { TaxCategory } from "@prisma/client"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -22,6 +23,12 @@ export default async function NewProductPage() {
     "use server"
     
     const user = await requireAuth()
+    const taxCategoryValue = formData.get("taxCategory") as string | null
+    const taxCategory = Object.values(TaxCategory).includes(
+      taxCategoryValue as TaxCategory
+    )
+      ? (taxCategoryValue as TaxCategory)
+      : TaxCategory.STANDARD
     
     const data = {
       sku: formData.get("sku") as string,
@@ -29,7 +36,7 @@ export default async function NewProductPage() {
       brand: formData.get("brand") as string || null,
       description: formData.get("description") as string || null,
       unit: formData.get("unit") as string,
-      taxCategory: formData.get("taxCategory") as string,
+      taxCategory,
       barcode: formData.get("barcode") as string || null,
       supplierCode: formData.get("supplierCode") as string || null,
       minStock: parseInt(formData.get("minStock") as string) || 0,

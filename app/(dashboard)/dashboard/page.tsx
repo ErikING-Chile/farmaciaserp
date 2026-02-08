@@ -405,7 +405,7 @@ export default async function DashboardPage() {
                 <p>No hay ventas recientes</p>
               </div>
             ) : (
-              stats.recentSales.map((sale: any) => (
+              stats.recentSales.map((sale) => (
                 <div key={sale.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
                   <div>
                     <p className="font-medium text-gray-900">Boleta #{sale.saleNumber}</p>

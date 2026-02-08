@@ -1,10 +1,10 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { UserRole } from "@prisma/client"
+import { ROLE_PERMISSIONS } from "@/lib/constants"
 
 export async function getSession() {
-  return await getServerSession(authOptions)
+  return await auth()
 }
 
 export async function getCurrentUser() {
@@ -29,6 +29,5 @@ export async function requireRole(allowedRoles: UserRole[]) {
 }
 
 export function hasPermission(userRole: UserRole, permission: string): boolean {
-  const { ROLE_PERMISSIONS } = require("@/lib/constants")
   return ROLE_PERMISSIONS[userRole]?.includes(permission) ?? false
 }

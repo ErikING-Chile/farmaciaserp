@@ -10,9 +10,11 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  ArrowRight
+  ArrowRight,
+  type LucideIcon
 } from "lucide-react"
 import Link from "next/link"
+import { Prisma, PurchaseStatus } from "@prisma/client"
 
 interface PurchasesPageProps {
   searchParams: {
@@ -22,16 +24,30 @@ interface PurchasesPageProps {
   }
 }
 
+type PurchaseWithRelations = Prisma.PurchaseInvoiceGetPayload<{
+  include: {
+    supplier: true
+    items: { include: { product: { select: { name: true; sku: true } } } }
+    receivings: { include: { items: true } }
+  }
+}>
+
+type PurchaseWithTotals = PurchaseWithRelations & {
+  totalReceived: number
+  totalOrdered: number
+  isFullyReceived: boolean
+}
+
 async function getPurchases(
   tenantId: string,
   search: string,
   status: string,
   page: number
-) {
+): Promise<{ purchases: PurchaseWithTotals[]; total: number; totalPages: number }> {
   const limit = 20
   const skip = (page - 1) * limit
 
-  let where: any = {
+  const where: Prisma.PurchaseInvoiceWhereInput = {
     tenantId,
   }
 
@@ -43,7 +59,10 @@ async function getPurchases(
   }
 
   if (status && status !== "all") {
-    where.status = status.toUpperCase()
+    const normalizedStatus = status.toUpperCase()
+    if (normalizedStatus in PurchaseStatus) {
+      where.status = normalizedStatus as PurchaseStatus
+    }
   }
 
   const [purchases, total] = await Promise.all([
@@ -72,12 +91,12 @@ async function getPurchases(
   ])
 
   // Calculate totals per purchase
-  const purchasesWithTotals = purchases.map((purchase: any) => {
-    const totalReceived = purchase.receivings.reduce((sum: number, rec: any) => {
-      return sum + rec.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0)
+  const purchasesWithTotals = purchases.map((purchase) => {
+    const totalReceived = purchase.receivings.reduce((sum, receiving) => {
+      return sum + receiving.items.reduce((itemSum, item) => itemSum + item.quantity, 0)
     }, 0)
     
-    const totalOrdered = purchase.items.reduce((sum: number, item: any) => sum + item.quantity, 0)
+    const totalOrdered = purchase.items.reduce((sum, item) => sum + item.quantity, 0)
     
     return {
       ...purchase,
@@ -107,7 +126,7 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
     page
   )
 
-  const statusLabels: Record<string, { label: string; color: string; icon: any }> = {
+  const statusLabels: Record<string, { label: string; color: string; icon: LucideIcon }> = {
     DRAFT: { label: "Borrador", color: "bg-gray-100 text-gray-800", icon: Clock },
     RECEIVED: { label: "Recibido", color: "bg-green-100 text-green-800", icon: CheckCircle },
     POSTED: { label: "Contabilizado", color: "bg-blue-100 text-blue-800", icon: CheckCircle },
@@ -211,7 +230,7 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
                   </td>
                 </tr>
               ) : (
-                purchases.map((purchase: any) => {
+                purchases.map((purchase) => {
                   const statusConfig = statusLabels[purchase.status] || statusLabels.DRAFT
                   const StatusIcon = statusConfig.icon
 

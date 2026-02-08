@@ -17,18 +17,18 @@ const STATIC_ASSETS = [
 ]
 
 // Install event - cache static assets
-self.addEventListener('install', (event: ExtendableEvent) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS)
     })
   )
   // Skip waiting to activate immediately
-  ;(self as any).skipWaiting()
+  self.skipWaiting()
 })
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event: ExtendableEvent) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -39,11 +39,11 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
     })
   )
   // Claim clients immediately
-  ;(self as any).clients.claim()
+  self.clients.claim()
 })
 
 // Fetch event - serve from cache or network
-self.addEventListener('fetch', (event: FetchEvent) => {
+self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
@@ -87,16 +87,16 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 })
 
 // Background sync for offline sales
-self.addEventListener('sync', (event: SyncEvent) => {
+self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-sales') {
     event.waitUntil(syncPendingSales())
   }
 })
 
 // Handle push notifications
-self.addEventListener('push', (event: PushEvent) => {
+self.addEventListener('push', (event) => {
   const data = event.data?.json() || {}
-  const options: NotificationOptions = {
+  const options = {
     body: data.message || 'Nueva notificación',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
@@ -105,12 +105,12 @@ self.addEventListener('push', (event: PushEvent) => {
   }
 
   event.waitUntil(
-    (self as any).registration.showNotification(data.title || 'FarmaciaERP', options)
+    self.registration.showNotification(data.title || 'FarmaciaERP', options)
   )
 })
 
 // Handle notification clicks
-self.addEventListener('notificationclick', (event: NotificationEvent) => {
+self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
   const data = event.notification.data
@@ -123,7 +123,7 @@ self.addEventListener('notificationclick', (event: NotificationEvent) => {
   }
 
   event.waitUntil(
-    (self as any).clients.openWindow(url)
+    self.clients.openWindow(url)
   )
 })
 
@@ -131,8 +131,8 @@ self.addEventListener('notificationclick', (event: NotificationEvent) => {
 async function syncPendingSales() {
   try {
     // Notify all clients to trigger sync
-    const clients = await (self as any).clients.matchAll({ type: 'window' })
-    clients.forEach((client: Client) => {
+    const clients = await self.clients.matchAll({ type: 'window' })
+    clients.forEach((client) => {
       client.postMessage({
         type: 'TRIGGER_SYNC',
         timestamp: new Date().toISOString(),
@@ -143,4 +143,3 @@ async function syncPendingSales() {
   }
 }
 
-export {}

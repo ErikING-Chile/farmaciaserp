@@ -38,11 +38,13 @@ export interface OfflineSale {
   syncId: string
 }
 
+type MetaValue = string | number | boolean | Date | null
+
 class OfflineDatabase extends Dexie {
   products!: Table<OfflineProduct>
   sales!: Table<OfflineSale>
   syncQueue!: Table<SyncOperation>
-  meta!: Table<{ key: string; value: any }>
+  meta!: Table<{ key: string; value: MetaValue }>
 
   constructor() {
     super("FarmaciaERP")
@@ -62,7 +64,11 @@ export const db = new OfflineDatabase()
 export async function syncProducts(tenantId: string, branchId: string | null): Promise<void> {
   try {
     const lastSync = await db.meta.get("lastProductSync")
-    const since = lastSync?.value || new Date(0).toISOString()
+    const lastSyncValue = lastSync?.value
+    const since =
+      lastSyncValue instanceof Date
+        ? lastSyncValue.toISOString()
+        : lastSyncValue ?? new Date(0).toISOString()
 
     const response = await fetch(
       `/api/sync/pull?type=products&tenantId=${tenantId}&since=${encodeURIComponent(since)}${branchId ? `&branchId=${branchId}` : ""}`
@@ -163,7 +169,7 @@ export async function getOfflineProducts(search?: string): Promise<OfflineProduc
     .filter((p) =>
       p.name.toLowerCase().includes(lowerSearch) ||
       p.sku.toLowerCase().includes(lowerSearch) ||
-      p.barcode?.includes(search)
+      p.barcode?.includes(search) === true
     )
     .toArray()
 }
@@ -174,7 +180,7 @@ export async function getOfflineProductByBarcode(barcode: string): Promise<Offli
 
 // Check online status
 export function isOnline(): boolean {
-  return typeof navigator !== "undefined" ? navigator.onLine : true
+  return typeof navigator !== "undefined" ? Boolean(navigator.onLine) : true
 }
 
 // Sync status
