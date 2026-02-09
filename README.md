@@ -88,6 +88,27 @@ Después de ejecutar el seed, puedes iniciar sesión con:
 - **Vendedor**: vendedor@demo.cl / password
 - **Bodeguero**: bodega@demo.cl / password
 
+## Rutas nuevas
+
+- `/suppliers` listado de proveedores
+- `/suppliers/[id]` detalle con contactos, condiciones, facturas y recepciones
+- `/suppliers/[id]/invoices/new` nueva factura de proveedor
+- `/suppliers/[id]/receipts/new` nueva recepcion
+- `/suppliers/receipts/[id]` confirmar recepcion
+- `/reports` reportes de compras, stock valorizado, vencimientos y quiebre
+- `/settings/branches` CRUD sucursales
+- `/settings/warehouses` CRUD bodegas
+- `/settings/tax-rates` CRUD impuestos
+- `/settings/alert-rules` reglas de alerta
+- `/settings/roles` matriz de permisos
+
+## Flujo Recepcion -> Lotes -> Movimientos
+
+1. Crear recepcion en `/suppliers/[id]/receipts/new` con lote y vencimiento
+2. Confirmar recepcion en `/suppliers/receipts/[id]`
+3. Se crea/actualiza el lote (Batch) y se registra StockMovement con tipo PURCHASE_RECEIPT
+4. Reportes de stock valorizado y vencimientos reflejan las recepciones
+
 ## Estructura del Proyecto
 
 ```
