@@ -13,15 +13,30 @@ ALTER TYPE "PurchaseStatus" ADD VALUE IF NOT EXISTS 'ISSUED';
 ALTER TYPE "PurchaseStatus" ADD VALUE IF NOT EXISTS 'PAID';
 ALTER TYPE "PurchaseStatus" ADD VALUE IF NOT EXISTS 'VOID';
 
--- Update ReceivingStatus enum values
+-- Update ReceivingStatus enum values (safe for shadow DB)
 CREATE TYPE "ReceivingStatus_new" AS ENUM ('DRAFT', 'RECEIVED', 'CANCELLED');
+
+-- Quitar default antes de cambiar el tipo
 ALTER TABLE "receivings" ALTER COLUMN "status" DROP DEFAULT;
-UPDATE "receivings" SET "status" = 'DRAFT' WHERE "status" IN ('PENDING', 'PARTIAL');
-UPDATE "receivings" SET "status" = 'RECEIVED' WHERE "status" = 'COMPLETE';
-ALTER TABLE "receivings" ALTER COLUMN "status" TYPE "ReceivingStatus_new" USING ("status"::text::"ReceivingStatus_new");
+
+-- Convertir el tipo mapeando valores antiguos -> nuevos (sin UPDATE previo)
+ALTER TABLE "receivings"
+ALTER COLUMN "status" TYPE "ReceivingStatus_new"
+USING (
+  CASE
+    WHEN "status"::text IN ('PENDING', 'PARTIAL') THEN 'DRAFT'
+    WHEN "status"::text = 'COMPLETE' THEN 'RECEIVED'
+    ELSE 'CANCELLED'
+  END
+)::"ReceivingStatus_new";
+
+-- Reemplazar enum viejo por el nuevo
 DROP TYPE "ReceivingStatus";
 ALTER TYPE "ReceivingStatus_new" RENAME TO "ReceivingStatus";
+
+-- Restaurar default
 ALTER TABLE "receivings" ALTER COLUMN "status" SET DEFAULT 'DRAFT';
+
 
 -- Tenants
 ALTER TABLE "tenants" ADD COLUMN "status" "TenantStatus" NOT NULL DEFAULT 'ACTIVE';
