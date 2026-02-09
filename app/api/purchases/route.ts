@@ -9,6 +9,7 @@ const querySchema = z.object({
   status: z.string().optional(),
   page: z.coerce.number().default(1),
   limit: z.coerce.number().default(20),
+  branchId: z.string().optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -23,6 +24,8 @@ export async function GET(request: NextRequest) {
 
     const where: Prisma.PurchaseInvoiceWhereInput = {
       tenantId: session.user.tenantId,
+      ...(session.user.branchId ? { branchId: session.user.branchId } : {}),
+      ...(params.branchId ? { branchId: params.branchId } : {}),
     }
 
     if (params.search) {
@@ -96,11 +99,14 @@ const purchaseItemSchema = z.object({
 const createPurchaseSchema = z.object({
   invoiceNumber: z.string().min(1),
   invoiceDate: z.string(),
+  dueDate: z.string().optional(),
   supplierId: z.string(),
+  branchId: z.string().optional(),
   items: z.array(purchaseItemSchema).min(1),
   netAmount: z.number().min(0),
   taxAmount: z.number().min(0),
   totalAmount: z.number().min(0),
+  notes: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -128,18 +134,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const branchId = data.branchId || session.user.branchId
+    if (!branchId) {
+      return NextResponse.json(
+        { error: "Branch is required" },
+        { status: 400 }
+      )
+    }
+
     const purchase = await prisma.$transaction(async (tx) => {
       // Create purchase invoice
       const invoice = await tx.purchaseInvoice.create({
         data: {
           invoiceNumber: data.invoiceNumber,
           invoiceDate: new Date(data.invoiceDate),
+          dueDate: data.dueDate ? new Date(data.dueDate) : null,
           netAmount: data.netAmount,
           taxAmount: data.taxAmount,
           totalAmount: data.totalAmount,
           status: "DRAFT",
           tenantId: session.user.tenantId,
           supplierId: data.supplierId,
+          branchId,
+          notes: data.notes || null,
           items: {
             create: data.items.map((item) => ({
               quantity: item.quantity,

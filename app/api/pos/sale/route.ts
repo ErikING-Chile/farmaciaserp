@@ -130,9 +130,13 @@ export async function POST(request: NextRequest) {
       })
 
       // Create stock movements (OUT) for each allocation
-      const defaultWarehouse = await tx.warehouse.findFirst({
-        where: { tenantId: session.user.tenantId },
-      })
+      const defaultWarehouse =
+        (await tx.warehouse.findFirst({
+          where: { tenantId: session.user.tenantId, isDefault: true },
+        })) ||
+        (await tx.warehouse.findFirst({
+          where: { tenantId: session.user.tenantId },
+        }))
 
       if (!defaultWarehouse) {
         throw new Error("No warehouse found")
@@ -153,8 +157,10 @@ export async function POST(request: NextRequest) {
           // Create stock movement
           await tx.stockMovement.create({
             data: {
-              type: "OUT",
+              type: "SALE",
               quantity: alloc.quantity,
+              qtyIn: 0,
+              qtyOut: alloc.quantity,
               tenantId: session.user.tenantId,
               branchId: sale.branchId,
               warehouseId: defaultWarehouse.id,
