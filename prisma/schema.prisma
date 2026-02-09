@@ -14,6 +14,8 @@ model Tenant {
   name        String
   slug        String   @unique
   rut         String?  // RUT chileno de la farmacia
+  status      TenantStatus @default(ACTIVE)
+  plan        String   @default("STARTER")
   isActive    Boolean  @default(true)
   settings    Json?    // Configuración específica del tenant
   featureFlags Json?   // Flags de características habilitadas
@@ -37,6 +39,10 @@ model Tenant {
   batches         Batch[]
   dteDocuments    DteDocument[]
   alerts          Alert[]
+  alertRules      AlertRule[]
+  taxRates        TaxRate[]
+  supplierContacts SupplierContact[]
+  supplierTerms   SupplierTerms[]
   auditLogs       AuditLog[]
 
   @@map("tenants")
@@ -128,6 +134,7 @@ model Branch {
   id          String   @id @default(uuid())
   name        String
   address     String?
+  city        String?
   phone       String?
   isActive    Boolean  @default(true)
   
@@ -142,6 +149,11 @@ model Branch {
   warehouses  Warehouse[]
   sales       Sale[]
   stockMovements StockMovement[]
+  batches     Batch[]
+  taxRates    TaxRate[]
+  alertRules  AlertRule[]
+  receivings  Receiving[]
+  purchaseInvoices PurchaseInvoice[]
 
   @@unique([name, tenantId])
   @@map("branches")
@@ -152,6 +164,8 @@ model Warehouse {
   name        String
   type        WarehouseType @default(MAIN)
   address     String?
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
   
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -164,6 +178,8 @@ model Warehouse {
 
   // Relations
   stockMovements StockMovement[]
+  batches         Batch[]
+  receivings      Receiving[]
 
   @@unique([name, tenantId])
   @@map("warehouses")
@@ -181,10 +197,14 @@ model Supplier {
   id          String   @id @default(uuid())
   name        String
   rut         String?
+  legalName   String?
+  tradeName   String?
+  giro        String?
   contactName String?
   email       String?
   phone       String?
   address     String?
+  status      SupplierStatus @default(ACTIVE)
   
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -194,9 +214,52 @@ model Supplier {
 
   // Relations
   purchaseInvoices PurchaseInvoice[]
+  receivings     Receiving[]
+  contacts       SupplierContact[]
+  terms          SupplierTerms?
 
   @@unique([name, tenantId])
   @@map("suppliers")
+}
+
+model SupplierContact {
+  id          String   @id @default(uuid())
+  name        String
+  role        String?
+  email       String?
+  phone       String?
+  isPrimary   Boolean  @default(false)
+
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  supplierId  String
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("supplier_contacts")
+}
+
+model SupplierTerms {
+  id          String   @id @default(uuid())
+  paymentTermDays Int @default(0)
+  creditLimit Decimal? @db.Decimal(12, 2)
+  currency    String   @default("CLP")
+  defaultDiscountPct Decimal? @db.Decimal(5, 2)
+  notes       String?
+
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  supplierId  String   @unique
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("supplier_terms")
 }
 
 model Customer {
@@ -275,6 +338,7 @@ model Product {
   saleItems       SaleItem[]
   stockMovements  StockMovement[]
   batches         Batch[]
+  receivingItems  ReceivingItem[]
 
   @@unique([sku, tenantId])
   @@map("products")
@@ -299,6 +363,12 @@ model Batch {
   
   tenantId        String
   tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+
+  warehouseId     String
+  warehouse       Warehouse @relation(fields: [warehouseId], references: [id])
   
   productId       String
   product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -310,7 +380,7 @@ model Batch {
   stockMovements  StockMovement[]
   saleAllocations SaleAllocation[]
 
-  @@unique([lotNumber, productId, tenantId])
+  @@unique([lotNumber, productId, tenantId, branchId, warehouseId])
   @@map("batches")
 }
 
@@ -318,6 +388,8 @@ model StockMovement {
   id          String   @id @default(uuid())
   type        MovementType
   quantity    Int
+  qtyIn       Int      @default(0)
+  qtyOut      Int      @default(0)
   unitCost    Decimal? @db.Decimal(10, 2)
   notes       String?
   
@@ -353,10 +425,14 @@ model StockMovement {
 }
 
 enum MovementType {
-  IN          // Entrada
-  OUT         // Salida
-  ADJUSTMENT  // Ajuste inventario
-  TRANSFER    // Transferencia
+  IN
+  OUT
+  ADJUSTMENT
+  TRANSFER
+  PURCHASE_RECEIPT
+  SALE
+  RETURN
+  EXPIRY_WRITE_OFF
 }
 
 // ==================== PURCHASES ====================
@@ -368,6 +444,8 @@ model PurchaseInvoice {
   dteType       String?  // 33 (Factura), 34 (Factura Exenta), etc.
   dteFolio      String?  // Folio del DTE
   rawXml        String?  @db.Text // XML del DTE importado
+  dueDate       DateTime?
+  notes         String?
   
   // Amounts
   netAmount     Decimal  @default(0) @db.Decimal(10, 2)
@@ -378,6 +456,9 @@ model PurchaseInvoice {
   
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  branchId      String?
+  branch        Branch?  @relation(fields: [branchId], references: [id])
   
   supplierId    String
   supplier      Supplier @relation(fields: [supplierId], references: [id])
@@ -398,6 +479,9 @@ enum PurchaseStatus {
   RECEIVED
   POSTED
   CANCELLED
+  ISSUED
+  PAID
+  VOID
 }
 
 model PurchaseInvoiceItem {
@@ -419,6 +503,9 @@ model PurchaseInvoiceItem {
   
   productId   String
   product     Product  @relation(fields: [productId], references: [id])
+
+  taxRateId   String?
+  taxRate     TaxRate? @relation(fields: [taxRateId], references: [id])
   
   createdAt   DateTime @default(now())
 
@@ -428,14 +515,23 @@ model PurchaseInvoiceItem {
 model Receiving {
   id          String   @id @default(uuid())
   receivedAt  DateTime @default(now())
-  status      ReceivingStatus @default(PENDING)
+  status      ReceivingStatus @default(DRAFT)
   notes       String?
   
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
-  invoiceId   String
-  invoice     PurchaseInvoice @relation(fields: [invoiceId], references: [id])
+
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id])
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  supplierId  String
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+
+  invoiceId   String?
+  invoice     PurchaseInvoice? @relation(fields: [invoiceId], references: [id])
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -447,9 +543,9 @@ model Receiving {
 }
 
 enum ReceivingStatus {
-  PENDING
-  PARTIAL
-  COMPLETE
+  DRAFT
+  RECEIVED
+  CANCELLED
 }
 
 model ReceivingItem {
@@ -457,6 +553,7 @@ model ReceivingItem {
   quantity    Int
   batchLotNumber    String
   expirationDate    DateTime
+  unitCost    Decimal  @default(0) @db.Decimal(10, 2)
   notes       String?
   
   tenantId    String
@@ -464,8 +561,9 @@ model ReceivingItem {
   
   receivingId String
   receiving   Receiving @relation(fields: [receivingId], references: [id], onDelete: Cascade)
-  
+
   productId   String
+  product     Product  @relation(fields: [productId], references: [id])
   
   createdAt   DateTime @default(now())
 
@@ -698,4 +796,58 @@ model AuditLog {
   createdAt   DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+model AlertRule {
+  id          String   @id @default(uuid())
+  type        AlertRuleType
+  params      Json
+  isActive    Boolean  @default(true)
+
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  branchId    String?
+  branch      Branch?  @relation(fields: [branchId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("alert_rules")
+}
+
+enum AlertRuleType {
+  STOCK_MIN
+  EXPIRY_SOON
+}
+
+model TaxRate {
+  id          String   @id @default(uuid())
+  name        String
+  rate        Decimal  @db.Decimal(5, 2)
+  isDefault   Boolean  @default(false)
+
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  branchId    String?
+  branch      Branch?  @relation(fields: [branchId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  purchaseInvoiceItems PurchaseInvoiceItem[]
+
+  @@unique([name, tenantId])
+  @@map("tax_rates")
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
 }

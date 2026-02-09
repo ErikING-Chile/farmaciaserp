@@ -1,4 +1,4 @@
-import { UserRole, MovementType, PurchaseStatus, SaleStatus, PaymentMethod, PaymentStatus, DteStatus, AlertType, AlertSeverity, WarehouseType, TaxCategory } from "@prisma/client"
+import { UserRole, MovementType, PurchaseStatus, SaleStatus, PaymentMethod, PaymentStatus, DteStatus, AlertType, AlertSeverity, WarehouseType, TaxCategory, TenantStatus, SupplierStatus, AlertRuleType } from "@prisma/client"
 
 // Re-export enums
 export {
@@ -13,6 +13,9 @@ export {
   AlertSeverity,
   WarehouseType,
   TaxCategory,
+  TenantStatus,
+  SupplierStatus,
+  AlertRuleType,
 }
 
 // Auth Types

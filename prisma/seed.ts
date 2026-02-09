@@ -33,6 +33,7 @@ async function main() {
     data: {
       name: "Sucursal Principal",
       address: "Av. Principal 123, Santiago",
+      city: "Santiago",
       phone: "+56 2 2345 6789",
       tenantId: tenant.id,
     },
@@ -42,6 +43,7 @@ async function main() {
     data: {
       name: "Sucursal Centro",
       address: "Calle Centro 456, Santiago",
+      city: "Santiago",
       phone: "+56 2 2345 6790",
       tenantId: tenant.id,
     },
@@ -55,11 +57,32 @@ async function main() {
       name: "Bodega Principal",
       type: "MAIN",
       branchId: mainBranch.id,
+      isDefault: true,
       tenantId: tenant.id,
     },
   })
 
   console.log(`✅ Created warehouse: ${mainWarehouse.name}`)
+
+  // Create tax rate
+  await prisma.taxRate.create({
+    data: {
+      name: "IVA 19%",
+      rate: 19,
+      isDefault: true,
+      tenantId: tenant.id,
+    },
+  })
+
+  // Create alert rule
+  await prisma.alertRule.create({
+    data: {
+      type: "STOCK_MIN",
+      params: { minStock: 5 },
+      isActive: true,
+      tenantId: tenant.id,
+    },
+  })
 
   // Create categories
   const categories = await Promise.all([
@@ -129,9 +152,13 @@ async function main() {
       data: {
         name: "Laboratorio Chile",
         rut: "96.123.456-7",
+        legalName: "Laboratorio Chile SPA",
+        tradeName: "Laboratorio Chile",
+        giro: "Laboratorio farmaceutico",
         contactName: "Juan Pérez",
         email: "ventas@laboratoriochile.cl",
         phone: "+56 2 2345 6789",
+        status: "ACTIVE",
         tenantId: tenant.id,
       },
     }),
@@ -139,9 +166,13 @@ async function main() {
       data: {
         name: "Distribuidora Farmacéutica SA",
         rut: "96.987.654-3",
+        legalName: "Distribuidora Farmaceutica SA",
+        tradeName: "Disfarm",
+        giro: "Distribucion de medicamentos",
         contactName: "María González",
         email: "contacto@disfarm.cl",
         phone: "+56 2 3456 7890",
+        status: "ACTIVE",
         tenantId: tenant.id,
       },
     }),
@@ -254,6 +285,8 @@ async function main() {
         remainingQty: 85,
         unitCost: 1500,
         productId: products[0].id,
+        branchId: mainBranch.id,
+        warehouseId: mainWarehouse.id,
         tenantId: tenant.id,
       },
     }),
@@ -265,6 +298,8 @@ async function main() {
         remainingQty: 100,
         unitCost: 1500,
         productId: products[0].id,
+        branchId: mainBranch.id,
+        warehouseId: mainWarehouse.id,
         tenantId: tenant.id,
       },
     }),
@@ -277,6 +312,8 @@ async function main() {
         remainingQty: 75,
         unitCost: 2000,
         productId: products[1].id,
+        branchId: mainBranch.id,
+        warehouseId: mainWarehouse.id,
         tenantId: tenant.id,
       },
     }),
@@ -289,6 +326,8 @@ async function main() {
         remainingQty: 48,
         unitCost: 8000,
         productId: products[2].id,
+        branchId: mainBranch.id,
+        warehouseId: mainWarehouse.id,
         tenantId: tenant.id,
       },
     }),
@@ -303,6 +342,8 @@ async function main() {
         data: {
           type: MovementType.IN,
           quantity: batch.initialQty,
+          qtyIn: batch.initialQty,
+          qtyOut: 0,
           unitCost: batch.unitCost,
           tenantId: tenant.id,
           branchId: mainBranch.id,
@@ -329,6 +370,7 @@ async function main() {
       status: PurchaseStatus.RECEIVED,
       tenantId: tenant.id,
       supplierId: suppliers[0].id,
+      branchId: mainBranch.id,
       items: {
         create: [
           {
@@ -403,6 +445,8 @@ async function main() {
     data: {
       type: MovementType.OUT,
       quantity: 2,
+      qtyIn: 0,
+      qtyOut: 2,
       tenantId: tenant.id,
       branchId: mainBranch.id,
       warehouseId: mainWarehouse.id,

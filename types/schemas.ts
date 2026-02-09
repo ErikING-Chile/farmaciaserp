@@ -59,9 +59,12 @@ export const purchaseSchema = z.object({
   supplierId: z.string(),
   invoiceNumber: z.string().min(1, "Número de factura requerido"),
   invoiceDate: z.string().datetime(),
+  dueDate: z.string().datetime().optional(),
+  branchId: z.string().optional(),
   items: z.array(purchaseItemSchema).min(1),
   dteType: z.string().optional(),
   dteFolio: z.string().optional(),
+  notes: z.string().optional(),
 })
 
 export type PurchaseInput = z.infer<typeof purchaseSchema>
@@ -70,13 +73,17 @@ export type PurchaseInput = z.infer<typeof purchaseSchema>
 export const receivingItemSchema = z.object({
   productId: z.string(),
   quantity: z.number().min(0),
+  unitCost: z.number().min(0),
   batchLotNumber: z.string(),
   expirationDate: z.string().datetime(),
   notes: z.string().optional(),
 })
 
 export const receivingSchema = z.object({
-  invoiceId: z.string(),
+  supplierId: z.string(),
+  branchId: z.string(),
+  warehouseId: z.string(),
+  invoiceId: z.string().optional(),
   items: z.array(receivingItemSchema).min(1),
   notes: z.string().optional(),
 })
