@@ -131,6 +131,9 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
     RECEIVED: { label: "Recibido", color: "bg-green-100 text-green-800", icon: CheckCircle },
     POSTED: { label: "Contabilizado", color: "bg-blue-100 text-blue-800", icon: CheckCircle },
     CANCELLED: { label: "Anulado", color: "bg-red-100 text-red-800", icon: XCircle },
+    ISSUED: { label: "Emitido", color: "bg-blue-100 text-blue-800", icon: CheckCircle },
+    PAID: { label: "Pagado", color: "bg-green-100 text-green-800", icon: CheckCircle },
+    VOID: { label: "Anulado", color: "bg-red-100 text-red-800", icon: XCircle },
   }
 
   return (
