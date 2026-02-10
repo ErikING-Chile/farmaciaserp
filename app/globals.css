@@ -1,60 +1,357 @@
 @import "tailwindcss";
 
+/* ============================================
+   THEME TOKENS - CSS VARIABLES
+   ============================================ */
+
+/* Base tokens (Light theme by default) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #0f172a;
-  --primary-foreground: #f8fafc;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #e2e8f0;
-  --accent-foreground: #0f172a;
-  --destructive: #dc2626;
-  --destructive-foreground: #f8fafc;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #2563eb;
+  /* Core colors */
+  --bg: #f8fafc;
+  --fg: #0f172a;
+  --fg-muted: rgba(15, 23, 42, 0.65);
+  --fg-strong: #020617;
+  
+  /* Panels/Cards */
+  --panel: rgba(255, 255, 255, 0.72);
+  --panel-strong: rgba(255, 255, 255, 0.92);
+  --panel-hover: rgba(255, 255, 255, 0.85);
+  
+  /* Borders */
+  --border: rgba(15, 23, 42, 0.12);
+  --border-strong: rgba(15, 23, 42, 0.20);
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px -2px rgba(2, 6, 23, 0.08);
+  --shadow: 0 8px 24px -8px rgba(2, 6, 23, 0.12);
+  --shadow-lg: 0 18px 40px -8px rgba(2, 6, 23, 0.15);
+  --shadow-xl: 0 24px 60px -12px rgba(2, 6, 23, 0.20);
+  
+  /* Accent colors */
+  --accent: #2563eb;
+  --accent-light: #3b82f6;
+  --accent-dark: #1d4ed8;
+  
+  /* Mesh gradient colors (Light) */
+  --mesh-color-1: 263 70% 50%;    /* Violet */
+  --mesh-color-2: 330 80% 60%;    /* Pink */
+  --mesh-color-3: 199 89% 48%;    /* Sky */
+  --mesh-color-4: 239 84% 67%;    /* Indigo */
+  --mesh-color-5: 168 76% 42%;    /* Teal */
+  
+  /* Status colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  /* Legacy compatibility */
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--panel);
+  --card-foreground: var(--fg);
+  --popover: var(--panel);
+  --popover-foreground: var(--fg);
+  --primary: var(--accent);
+  --primary-foreground: #ffffff;
+  --secondary: rgba(15, 23, 42, 0.08);
+  --secondary-foreground: var(--fg);
+  --muted: rgba(15, 23, 42, 0.08);
+  --muted-foreground: var(--fg-muted);
+  --accent: var(--accent);
+  --accent-foreground: #ffffff;
+  --destructive: var(--error);
+  --destructive-foreground: #ffffff;
+  --input: var(--border);
+  --ring: var(--accent);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark theme overrides */
+html[data-theme="dark"] {
+  /* Core colors */
+  --bg: #0b0f1a;
+  --fg: rgba(240, 244, 255, 0.92);
+  --fg-muted: rgba(200, 208, 225, 0.60);
+  --fg-strong: #ffffff;
+  
+  /* Panels/Cards */
+  --panel: rgba(10, 14, 24, 0.70);
+  --panel-strong: rgba(12, 16, 28, 0.88);
+  --panel-hover: rgba(14, 18, 30, 0.80);
+  
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.40);
+  --shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.50);
+  --shadow-lg: 0 18px 40px -8px rgba(0, 0, 0, 0.60);
+  --shadow-xl: 0 24px 60px -12px rgba(0, 0, 0, 0.70);
+  
+  /* Accent colors */
+  --accent: #60a5fa;
+  --accent-light: #93c5fd;
+  --accent-dark: #3b82f6;
+  
+  /* Mesh gradient colors (Dark) - lower opacity for subtle effect */
+  --mesh-color-1: 263 70% 50%;    /* Violet */
+  --mesh-color-2: 330 80% 60%;    /* Pink */
+  --mesh-color-3: 199 89% 48%;    /* Sky */
+  --mesh-color-4: 239 84% 67%;    /* Indigo */
+  --mesh-color-5: 168 76% 42%;    /* Teal */
+  
+  /* Legacy compatibility */
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--panel);
+  --card-foreground: var(--fg);
+  --popover: var(--panel);
+  --popover-foreground: var(--fg);
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: var(--fg);
+  --muted: rgba(255, 255, 255, 0.08);
+  --muted-foreground: var(--fg-muted);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --card: #0b1220;
-    --card-foreground: #e2e8f0;
-    --popover: #0b1220;
-    --popover-foreground: #e2e8f0;
-    --primary: #e2e8f0;
-    --primary-foreground: #0f172a;
-    --secondary: #1f2937;
-    --secondary-foreground: #e2e8f0;
-    --muted: #1f2937;
-    --muted-foreground: #94a3b8;
-    --accent: #334155;
-    --accent-foreground: #e2e8f0;
-    --destructive: #ef4444;
-    --destructive-foreground: #0f172a;
-    --border: #1f2937;
-    --input: #1f2937;
-    --ring: #60a5fa;
-  }
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+html, body {
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================
+   GRADIENT MESH BACKGROUNDS
+   ============================================ */
+
+/* Light theme mesh - CSS-based radial gradients */
+html:not([data-theme="dark"]) .mesh-bg,
+:root:not([data-theme="dark"]) .mesh-bg {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(600px 420px at 20% 15%, hsl(var(--mesh-color-1) / 0.18) 0px, transparent 60%),
+    radial-gradient(520px 380px at 82% 14%, hsl(var(--mesh-color-2) / 0.14) 0px, transparent 60%),
+    radial-gradient(720px 520px at 60% 90%, hsl(var(--mesh-color-3) / 0.12) 0px, transparent 65%),
+    radial-gradient(520px 420px at 6% 72%, hsl(var(--mesh-color-4) / 0.10) 0px, transparent 60%),
+    radial-gradient(420px 360px at 95% 72%, hsl(var(--mesh-color-5) / 0.10) 0px, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Dark theme mesh - more subtle, lower opacity */
+html[data-theme="dark"] .mesh-bg {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(600px 420px at 20% 15%, hsl(var(--mesh-color-1) / 0.22) 0px, transparent 60%),
+    radial-gradient(520px 380px at 82% 14%, hsl(var(--mesh-color-2) / 0.18) 0px, transparent 60%),
+    radial-gradient(720px 520px at 60% 90%, hsl(var(--mesh-color-3) / 0.16) 0px, transparent 65%),
+    radial-gradient(520px 420px at 6% 72%, hsl(var(--mesh-color-4) / 0.14) 0px, transparent 60%),
+    radial-gradient(420px 360px at 95% 72%, hsl(var(--mesh-color-5) / 0.12) 0px, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Grid overlay - very subtle */
+.mesh-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+html[data-theme="dark"] .mesh-grid::before {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  opacity: 0.12;
+}
+
+/* Vignette effect */
+.mesh-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.15) 100%);
+  pointer-events: none;
+}
+
+html[data-theme="dark"] .mesh-vignette::after {
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+/* Noise texture overlay (optional) */
+.mesh-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.015;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   ANIMATED BLOBS (Alternative implementation)
+   ============================================ */
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animation-delay-6000 {
+  animation-delay: 6s;
+}
+
+.animation-delay-8000 {
+  animation-delay: 8s;
+}
+
+/* Show/hide blobs based on theme */
+html:not([data-theme="dark"]) .mesh-blobs-dark {
+  display: none;
+}
+
+html[data-theme="dark"] .mesh-blobs-light {
+  display: none;
+}
+
+/* ============================================
+   TAILWIND THEME CONFIGURATION
+   ============================================ */
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  
+  /* Custom color tokens for Tailwind */
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-panel: var(--panel);
+  --color-panel-strong: var(--panel-strong);
+  --color-border-custom: var(--border);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Glass morphism panels */
+.glass-panel {
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.glass-panel-strong {
+  background: var(--panel-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Theme-aware text colors */
+.text-theme {
+  color: var(--fg);
+}
+
+.text-theme-muted {
+  color: var(--fg-muted);
+}
+
+/* Theme-aware backgrounds */
+.bg-theme {
+  background-color: var(--bg);
+}
+
+.bg-theme-panel {
+  background-color: var(--panel);
+}
+
+.bg-theme-panel-strong {
+  background-color: var(--panel-strong);
+}
+
+/* Theme-aware borders */
+.border-theme {
+  border-color: var(--border);
+}
+
+/* ============================================
+   COMPONENT OVERRIDES
+   ============================================ */
+
+/* Ensure inputs and buttons work with theme */
+input, textarea, select {
+  background-color: var(--panel);
+  color: var(--fg);
+  border-color: var(--border);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--fg-muted);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Selection color */
+::selection {
+  background: var(--accent);
+  color: white;
 }

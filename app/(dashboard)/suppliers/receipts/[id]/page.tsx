@@ -32,7 +32,7 @@ export default async function ReceiptDetailPage({ params }: ReceiptDetailPagePro
 
     const user = await requireAuth()
     await confirmReceiving({
-      receivingId: receiving.id,
+      receivingId: id,
       tenantId: user.tenantId,
       userId: user.id,
     })

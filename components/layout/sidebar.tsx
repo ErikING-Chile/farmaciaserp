@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils"
 import { signOut } from "next-auth/react"
 import { ROLE_LABELS, Role } from "@/lib/constants"
+import { ThemeToggle } from "@/components/theme"
 
 interface SidebarProps {
   user: {
@@ -49,13 +50,13 @@ export function Sidebar({ user }: SidebarProps) {
 
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+      <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r px-6 pb-4 glass-panel-strong">
         <div className="flex h-16 shrink-0 items-center">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
               <Package className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">Farmacia ERP</span>
+            <span className="text-xl font-bold text-theme">Farmacia ERP</span>
           </Link>
         </div>
 
@@ -69,17 +70,17 @@ export function Sidebar({ user }: SidebarProps) {
                       href={item.href}
                       className={cn(
                         pathname === item.href || pathname.startsWith(`${item.href}/`)
-                          ? "bg-gray-50 text-blue-600"
-                          : "text-gray-700 hover:bg-gray-50 hover:text-blue-600",
-                        "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
+                          ? "bg-accent/10 text-accent"
+                          : "text-theme-muted hover:bg-theme-panel hover:text-accent",
+                        "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 transition-colors"
                       )}
                     >
                       <item.icon
                         className={cn(
                           pathname === item.href || pathname.startsWith(`${item.href}/`)
-                            ? "text-blue-600"
-                            : "text-gray-400 group-hover:text-blue-600",
-                          "h-6 w-6 shrink-0"
+                            ? "text-accent"
+                            : "text-theme-muted group-hover:text-accent",
+                          "h-6 w-6 shrink-0 transition-colors"
                         )}
                         aria-hidden="true"
                       />
@@ -91,25 +92,30 @@ export function Sidebar({ user }: SidebarProps) {
             </li>
 
             <li className="mt-auto">
-              <div className="border-t border-gray-200 pt-4">
+              <div className="border-t border-theme pt-4 space-y-3">
+                {/* Theme Toggle in Sidebar */}
+                <div className="px-2">
+                  <ThemeToggle variant="button" />
+                </div>
+                
                 <div className="flex items-center gap-x-3 px-2 py-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <span className="text-sm font-medium text-blue-600">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                    <span className="text-sm font-medium text-accent">
                       {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-theme truncate">
                       {user.name || user.email}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-theme-muted">
                       {ROLE_LABELS[userRole]}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => signOut({ callbackUrl: "/login" })}
-                  className="flex w-full items-center gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-red-600 hover:bg-red-50"
+                  className="flex w-full items-center gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-red-500 hover:bg-red-500/10 transition-colors"
                 >
                   <LogOut className="h-5 w-5 shrink-0" />
                   Cerrar Sesión

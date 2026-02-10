@@ -10,7 +10,7 @@ export default async function DashboardLayout({
   const user = await requireAuth()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Sidebar user={user} />
       <div className="lg:pl-64">
         <Header user={user} />

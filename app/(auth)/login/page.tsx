@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertCircle } from "lucide-react"
+import { ThemeToggle } from "@/components/theme"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -49,14 +50,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md">
+    <div className="glass-panel-strong p-8 rounded-2xl">
+      <div className="flex justify-end mb-4">
+        <ThemeToggle />
+      </div>
+      
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Farmacia ERP</h1>
-        <p className="text-gray-600 mt-1">Inicie sesión en su cuenta</p>
+        <h1 className="text-2xl font-bold text-theme">Farmacia ERP</h1>
+        <p className="text-theme-muted mt-1">Inicie sesión en su cuenta</p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-700">
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md flex items-center gap-2 text-red-500">
           <AlertCircle className="h-4 w-4" />
           <span className="text-sm">{error}</span>
         </div>
@@ -64,7 +69,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-theme">Email</Label>
           <Input
             id="email"
             type="email"
@@ -72,28 +77,31 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="bg-theme-panel border-theme text-theme placeholder:text-theme-muted"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password" className="text-theme">Contraseña</Label>
           <Input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="bg-theme-panel border-theme text-theme placeholder:text-theme-muted"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tenant">Farmacia (opcional)</Label>
+          <Label htmlFor="tenant" className="text-theme">Farmacia (opcional)</Label>
           <Input
             id="tenant"
             type="text"
             placeholder="Nombre de la farmacia"
             value={tenantSlug}
             onChange={(e) => setTenantSlug(e.target.value)}
+            className="bg-theme-panel border-theme text-theme placeholder:text-theme-muted"
           />
         </div>
 
@@ -106,7 +114,7 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-600">
+      <div className="mt-6 text-center text-sm text-theme-muted">
         <p>Demo: admin@demo.cl / password</p>
       </div>
     </div>
