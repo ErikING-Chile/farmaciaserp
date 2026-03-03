@@ -43,6 +43,8 @@ model Tenant {
   taxRates        TaxRate[]
   supplierContacts SupplierContact[]
   supplierTerms   SupplierTerms[]
+  therapeuticActions TherapeuticAction[]
+  productTherapeuticActions ProductTherapeuticAction[]
   auditLogs       AuditLog[]
 
   @@map("tenants")
@@ -339,9 +341,44 @@ model Product {
   stockMovements  StockMovement[]
   batches         Batch[]
   receivingItems  ReceivingItem[]
+  therapeuticActions ProductTherapeuticAction[]
 
   @@unique([sku, tenantId])
   @@map("products")
+}
+
+model TherapeuticAction {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products    ProductTherapeuticAction[]
+
+  @@unique([name, tenantId])
+  @@map("therapeutic_actions")
+}
+
+model ProductTherapeuticAction {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  productId           String
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  therapeuticActionId String
+  therapeuticAction   TherapeuticAction @relation(fields: [therapeuticActionId], references: [id], onDelete: Cascade)
+
+  createdAt           DateTime @default(now())
+
+  @@unique([productId, therapeuticActionId, tenantId])
+  @@map("product_therapeutic_actions")
 }
 
 enum TaxCategory {

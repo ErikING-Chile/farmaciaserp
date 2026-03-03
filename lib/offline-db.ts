@@ -40,6 +40,11 @@ export interface OfflineSale {
 
 type MetaValue = string | number | boolean | Date | null
 
+export interface PosSelection {
+  branchId: string | null
+  warehouseId: string | null
+}
+
 class OfflineDatabase extends Dexie {
   products!: Table<OfflineProduct>
   sales!: Table<OfflineSale>
@@ -176,6 +181,29 @@ export async function getOfflineProducts(search?: string): Promise<OfflineProduc
 
 export async function getOfflineProductByBarcode(barcode: string): Promise<OfflineProduct | undefined> {
   return db.products.where("barcode").equals(barcode).first()
+}
+
+export async function getPosSelection(): Promise<PosSelection | null> {
+  const [branch, warehouse] = await Promise.all([
+    db.meta.get("posBranchId"),
+    db.meta.get("posWarehouseId"),
+  ])
+
+  if (!branch?.value && !warehouse?.value) {
+    return null
+  }
+
+  return {
+    branchId: typeof branch?.value === "string" ? branch.value : null,
+    warehouseId: typeof warehouse?.value === "string" ? warehouse.value : null,
+  }
+}
+
+export async function setPosSelection(selection: PosSelection): Promise<void> {
+  await db.transaction("rw", db.meta, async () => {
+    await db.meta.put({ key: "posBranchId", value: selection.branchId })
+    await db.meta.put({ key: "posWarehouseId", value: selection.warehouseId })
+  })
 }
 
 // Check online status
