@@ -55,9 +55,7 @@ describe("createPosSale", () => {
       },
     }
 
-    prismaMock.$transaction.mockImplementation(
-      async (callback: (tx: typeof tx) => unknown) => callback(tx)
-    )
+    prismaMock.$transaction.mockImplementation(async (callback) => callback(tx))
 
     await createPosSale({
       tenantId: "tenant-1",
@@ -123,9 +121,7 @@ describe("createPosSale", () => {
       },
     }
 
-    prismaMock.$transaction.mockImplementation(
-      async (callback: (tx: typeof tx) => unknown) => callback(tx)
-    )
+    prismaMock.$transaction.mockImplementation(async (callback) => callback(tx))
 
     await expect(
       createPosSale({

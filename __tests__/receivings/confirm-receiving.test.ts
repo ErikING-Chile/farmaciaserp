@@ -2,7 +2,10 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest"
 import { prisma } from "@/lib/prisma"
 import { confirmReceiving } from "@/lib/receivings"
 
-describe("confirmReceiving", () => {
+const runDbTests = process.env.RUN_DB_TESTS === "true"
+const describeDb = runDbTests ? describe : describe.skip
+
+describeDb("confirmReceiving", () => {
   let tenantId = ""
   let branchId = ""
   let warehouseId = ""
