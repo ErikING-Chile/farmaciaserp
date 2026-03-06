@@ -399,6 +399,7 @@ async function main() {
       status: SaleStatus.PAID,
       tenantId: tenant.id,
       branchId: mainBranch.id,
+      warehouseId: mainWarehouse.id,
       sellerId: users[1].id,
       items: {
         create: [

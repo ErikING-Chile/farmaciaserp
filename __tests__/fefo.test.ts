@@ -1,45 +1,8 @@
 import { describe, it, expect } from "vitest"
-
-// Mock FEFO allocation logic similar to POS component
-interface Batch {
-  id: string
-  lotNumber: string
-  expirationDate: Date
-  remainingQty: number
-}
-
-interface Allocation {
-  batchId: string
-  quantity: number
-  lotNumber: string
-}
-
-function allocateBatchesFEFO(batches: Batch[], quantity: number): { allocations: Allocation[], remaining: number } {
-  const allocations: Allocation[] = []
-  let remaining = quantity
-
-  // Sort by expiration date (FEFO - First Expired, First Out)
-  const sortedBatches = [...batches].sort(
-    (a, b) => a.expirationDate.getTime() - b.expirationDate.getTime()
-  )
-
-  for (const batch of sortedBatches) {
-    if (remaining <= 0) break
-
-    const allocateQty = Math.min(remaining, batch.remainingQty)
-    allocations.push({
-      batchId: batch.id,
-      quantity: allocateQty,
-      lotNumber: batch.lotNumber,
-    })
-    remaining -= allocateQty
-  }
-
-  return { allocations, remaining }
-}
+import { allocateBatchesFefo, FefoBatch } from "@/lib/pos-sales"
 
 describe("FEFO Allocation", () => {
-  const batches: Batch[] = [
+  const batches: FefoBatch[] = [
     {
       id: "batch-1",
       lotNumber: "L001",
@@ -61,7 +24,7 @@ describe("FEFO Allocation", () => {
   ]
 
   it("should allocate from earliest expiring batch first", () => {
-    const { allocations, remaining } = allocateBatchesFEFO(batches, 5)
+    const { allocations, remaining } = allocateBatchesFefo(batches, 5)
 
     expect(remaining).toBe(0)
     expect(allocations).toHaveLength(1)
@@ -70,7 +33,7 @@ describe("FEFO Allocation", () => {
   })
 
   it("should allocate from multiple batches when needed", () => {
-    const { allocations, remaining } = allocateBatchesFEFO(batches, 20)
+    const { allocations, remaining } = allocateBatchesFefo(batches, 20)
 
     expect(remaining).toBe(0)
     expect(allocations).toHaveLength(2)
@@ -85,7 +48,7 @@ describe("FEFO Allocation", () => {
   })
 
   it("should return remaining quantity when stock is insufficient", () => {
-    const { allocations, remaining } = allocateBatchesFEFO(batches, 50)
+    const { allocations, remaining } = allocateBatchesFefo(batches, 50)
 
     expect(remaining).toBe(5) // 45 available, need 50
     expect(allocations).toHaveLength(3)
@@ -96,21 +59,21 @@ describe("FEFO Allocation", () => {
   })
 
   it("should handle empty batches", () => {
-    const { allocations, remaining } = allocateBatchesFEFO([], 10)
+    const { allocations, remaining } = allocateBatchesFefo([], 10)
 
     expect(allocations).toHaveLength(0)
     expect(remaining).toBe(10)
   })
 
   it("should handle zero quantity", () => {
-    const { allocations, remaining } = allocateBatchesFEFO(batches, 0)
+    const { allocations, remaining } = allocateBatchesFefo(batches, 0)
 
     expect(allocations).toHaveLength(0)
     expect(remaining).toBe(0)
   })
 
   it("should maintain proper order for complex allocation", () => {
-    const complexBatches: Batch[] = [
+    const complexBatches: FefoBatch[] = [
       {
         id: "b1",
         lotNumber: "LATE",
@@ -131,7 +94,7 @@ describe("FEFO Allocation", () => {
       },
     ]
 
-    const { allocations, remaining } = allocateBatchesFEFO(complexBatches, 12)
+    const { allocations, remaining } = allocateBatchesFefo(complexBatches, 12)
 
     expect(remaining).toBe(0)
     expect(allocations).toHaveLength(2)

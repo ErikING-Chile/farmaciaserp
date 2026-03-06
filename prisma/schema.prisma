@@ -182,6 +182,7 @@ model Warehouse {
   stockMovements StockMovement[]
   batches         Batch[]
   receivings      Receiving[]
+  sales           Sale[]
 
   @@unique([name, tenantId])
   @@map("warehouses")
@@ -418,6 +419,7 @@ model Batch {
   saleAllocations SaleAllocation[]
 
   @@unique([lotNumber, productId, tenantId, branchId, warehouseId])
+  @@index([tenantId, branchId, warehouseId, productId, expirationDate, remainingQty])
   @@map("batches")
 }
 
@@ -458,6 +460,7 @@ model StockMovement {
   
   createdAt   DateTime @default(now())
 
+  @@index([tenantId, branchId, warehouseId, productId, createdAt])
   @@map("stock_movements")
 }
 
@@ -631,6 +634,9 @@ model Sale {
   
   branchId    String
   branch      Branch   @relation(fields: [branchId], references: [id])
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
   
   sellerId    String
   seller      User     @relation(fields: [sellerId], references: [id])
@@ -646,6 +652,7 @@ model Sale {
   payments    Payment[]
   dteDocument DteDocument?
 
+  @@index([tenantId, branchId, warehouseId, soldAt])
   @@map("sales")
 }
 
