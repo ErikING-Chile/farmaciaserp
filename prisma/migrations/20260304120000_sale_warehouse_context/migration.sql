@@ -5,8 +5,7 @@ ALTER TABLE "sales" ADD COLUMN "warehouseId" TEXT;
 
 -- 2) Backfill from existing SALE stock movements when available.
 UPDATE "sales" s
-SET "warehouseId" = sm."warehouseId"
-FROM LATERAL (
+SET "warehouseId" = (
   SELECT m."warehouseId"
   FROM "stock_movements" m
   WHERE m."refType" = 'SALE'
@@ -14,13 +13,12 @@ FROM LATERAL (
     AND m."tenantId" = s."tenantId"
   ORDER BY m."createdAt" ASC
   LIMIT 1
-) sm
+)
 WHERE s."warehouseId" IS NULL;
 
 -- 3) Fallback to branch-preferred/default warehouse by tenant.
 UPDATE "sales" s
-SET "warehouseId" = w."id"
-FROM LATERAL (
+SET "warehouseId" = (
   SELECT ww."id"
   FROM "warehouses" ww
   WHERE ww."tenantId" = s."tenantId"
@@ -30,7 +28,7 @@ FROM LATERAL (
     CASE WHEN ww."isDefault" THEN 0 ELSE 1 END,
     ww."createdAt" ASC
   LIMIT 1
-) w
+)
 WHERE s."warehouseId" IS NULL;
 
 -- 4) Create deterministic backfill warehouses for unresolved tenant/branch pairs.
